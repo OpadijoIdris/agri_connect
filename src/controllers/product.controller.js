@@ -108,3 +108,20 @@ export const deleteAllProduct = async (req, res) => {
     res.status(500).json({message: error.message})
   }
 };
+
+export const searchProduct = async (req, res) => {
+    try {
+        const { name, farmer, location } = req.query;
+
+        const products = await productServices.searchProduct(name, farmer, location);
+
+        if (!products.length) {
+            return res.status(404).json({ message: "No search results found" });
+        }
+
+        res.status(200).json({ products });
+
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};

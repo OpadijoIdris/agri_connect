@@ -163,4 +163,39 @@ export const deleteAllProduct = async (sellerId) => {
     console.log("error deleting all products", error.message);
     throw new Error ("Could not delete products");
   }
-}
+};
+
+export const searchProduct = async (name, farmer, location) => {
+    try {
+        const query = {};
+
+        if (name) {
+            query.name = { $regex: name, $options: "i" };
+        }
+
+        if (location) {
+            query.location = { $regex: location, $options: "i" }; // FIXED BUG: using location, not name
+        }
+
+        if (farmer) {
+            const farmers = await User.find({
+                role: "Farmer",
+                name: { $regex: farmer, $options: "i" }
+            }).select("_id");
+
+            const farmerIds = farmers.map(f => f._id);
+
+            query.seller = { $in: farmerIds };
+        }
+
+        const products = await Product.find(query)
+            .populate("seller", "name email location");
+
+        return products;
+
+    } catch (error) {
+        console.log("Error in search product:", error.message);
+        throw new Error("Could not search product");
+    }
+};
+
